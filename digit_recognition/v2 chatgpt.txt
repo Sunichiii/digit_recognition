@@ -1,0 +1,45 @@
+import cv2
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+
+# Load the pre-trained model
+model = tf.keras.models.load_model('digit_recognition/handwritten_model.keras')
+print("Model loaded successfully")
+
+image_number = 1
+while os.path.isfile(f"digits/digit{image_number}.png"):
+    try:
+        # Read the image and preprocess it
+        img = cv2.imread(f"digits/digit{image_number}.png", cv2.IMREAD_GRAYSCALE)
+        
+        if img is None:
+            print(f"Image digit{image_number}.png not loaded")
+            continue
+        
+        # Resize the image to 28x28 if needed
+        img = cv2.resize(img, (28, 28))
+        
+        # Invert the image colors if required
+        img = np.invert(img)
+        
+        # Normalize the image
+        img = img / 255.0
+        
+        # Add batch dimension
+        img = np.expand_dims(img, axis=0)
+        
+        # Make prediction
+        prediction = model.predict(img)
+        print(f"This digit maybe is a {np.argmax(prediction)}")
+        
+        # Display the image
+        plt.imshow(img[0], cmap=plt.cm.binary)
+        plt.show()
+    
+    except Exception as e:
+        print(f"Error: {e}")
+    
+    finally:
+        image_number += 1
